@@ -11,15 +11,16 @@ from langchain.chains import LLMChain
 load_dotenv()
 # Temporary module 
 
-class Twitter:
-    def __init__(self):
+class TwitterClient:
+    def __init__(self, tweet):
         self.consumer_key = os.environ.get('API_KEY') 
         self.consumer_secret = os.environ.get('API_SECRET_KEY')
         self.access_token = os.environ.get('ACCESS_TOKEN')
         self.access_token_secret = os.environ.get('SECRET_ACCESS_TOKEN')
         self.bearer_token = os.environ.get('BEARER_TOKEN')
+        self.text = tweet
     
-    def post_tweet_message(self): 
+    def post_tweet(self): 
         api = tweepy.Client(bearer_token=self.bearer_token,
                             consumer_key=self.consumer_key,
                             consumer_secret=self.consumer_secret,
@@ -27,7 +28,8 @@ class Twitter:
                             access_token_secret=self.access_token_secret
                             )
         try:
-            api.create_tweet(text='Twitter is great for dev and newbies')
+            # self.text = self.text.strip('\n\n')
+            api.create_tweet(text=self.text.strip('\n\n'))
             return True
         except Exception as e:
             print(e)
@@ -53,71 +55,120 @@ class Twitter:
 #         return response
 
 class Template:
+    """This class represents Creation of templates"""
 
+    def __init__(self, tool, tool_info):
+        self.tool = tool
+        self.tool_info = tool_info
 
-    def call_tool_specific_task(self):
-       
-        self.tool, self.specific_task = ToolSpecfic_Task().get_tool()
-    
     def get_template(self):
-        template = f""" Answer the question based on the context below. If the question cannot be answered using the information provided, answer with "I don't know."
-
-        Context: Recently discovered {self.tool} and it's a game-changer for {self.specific_task}. Highly recommend it to my fellow coders!
-
-        Question: What is the tool/resource mentioned in the context, and what specific task is it recommended for?
-
-        Answer: {self.tool} is the mentioned tool/resource, and it's highly recommended for {self.specific_task}. It's a game-changer in the context.
-        """
-        return (template)
-    
+        try:
+            template = f"""Provide information on the topic of {self.tool} and its relevance in {self.tool_info}. Please limit your response to 20 words. #Information #Coding #Development"""
+            return (template)
+        except Exception as e:
+            print(e)
         
 
 class LangchainPrompt:
 
-    def get_template(self):
-        get_temp = Template()
-        get_temp.call_tool_specific_task()
-        self.template = get_temp.get_template()
+    """ This class provides a way to interact with the LangchainPrompt with Openai GPT-3 """
 
-    
-    # initialize the models
-    openai = OpenAI(
-    model_name="text-davinci-003",
-    openai_api_key = os.environ.get('OPENAI_API_KEY')
-    )
+    def __init__(self, template) :
+        self.get_template = template
     
     def LLMPromptTemplate(self):
         try:
-            llm = OpenAI(temperature = .8)
-            chain = LLMChain(llm = llm, prompt = self.template)
-            chain.run()
+            # print(self.template)
+            # prompt = PromptTemplate.from_template(template=self.get_template)
+            llm = OpenAI(openai_api_key = os.environ.get('OPENAI_API_KEY'))
+            tweet = llm.predict(self.get_template)
+                
+            return (tweet)
         except Exception as e:
             print(e)
 
-class ToolSpecfic_Task:
+class ToolSpecficTask:
+    """Random Tool and Infomation about Tool from the csv file."""
+
     def random_word(self):
-        num = random.randint(0,41)
-        return num
+        rand = random.randint(0,40)
+        return rand
     
     def get_tool(self):
-        df = pd.read_csv('tools-specific_task.csv')
-        index = self.random_word()
-        tool, specific_task = df.iloc[index,[0,1]]
-        return tool, specific_task
- 
+        try:
+            df = pd.read_csv('tools-specific_task.csv')
+            index = self.random_word()
+            tool, tool_info = df.iloc[index,[0,1]]
+            return (tool, tool_info)
+        except Exception as e:
+            print(e)
+
+class SaveTweet:
+    """Saving tweet generate by Tools and Store in .csv file"""
+
+    def __init__(self, tool, tool_info, tweet) -> None:
+        self.tool = tool
+        self.tool_info = tool_info
+        self.tweet = tweet
+    
+    def savetweet(self):
+        try:
+            # Add the new tweet information
+            new_tweet = {
+                "Tool": self.tool,
+                "ToolInfo": self.tool_info,
+                "Tweet": self.tweet.strip('\n\n')
+            }
+            
+            # Check if the CSV file already exists
+            try:
+                df = pd.read_csv('Save_tweet.csv')
+            except FileNotFoundError:
+                # If the file doesn't exist, create a new DataFrame
+                df = pd.DataFrame(columns=['Tool', 'ToolInfo', 'Tweet'])
+
+            # Concatenate the new tweet with the existing DataFrame
+            df = pd.concat([df, pd.DataFrame([new_tweet])], ignore_index=True)
+
+            # Save the updated DataFrame to the CSV file
+            df.to_csv('Save_tweet.csv', index=False)
+                
+            return True
+        except Exception as e:
+            print(e)
+
+
+
+def main():
+
+    # Get Random Tool and Information about Tool
+    get_tool = ToolSpecficTask()
+    get_tool, get_tool_info = get_tool.get_tool()
+    
+    # Get Template about Tool and Information about Tool for GPT model or Custom model
+    get_template = Template(tool=get_tool, tool_info=get_tool_info) 
+    get_template = get_template.get_template()
+
+    # Generate Tweet about Tool and Information about Tool using Template
+    get_tweet = LangchainPrompt(get_template)
+    get_tweet = get_tweet.LLMPromptTemplate()
+
+    # Make Api cal To X(Twitter) to Tweet
+    post_tweet = TwitterClient(tweet=get_tweet)
+    post_tweet = post_tweet.post_tweet()
+
+    # save the tweet in Dataframe using pandas
+    save_tweet = SaveTweet(tool=get_tool, tool_info=get_tool_info, tweet=get_tweet)
+    save_tweet = save_tweet.savetweet()
+
+    # post_tweet = True
+    if post_tweet and save_tweet:
+        print("Tweet Successfully")
+    else:
+        print("Tweet Failure")
 
 if __name__ == "__main__":
-    # get_temp = Template()
-    # get_temp.call_tool_specific_task()
-    # get_temp.get_template()
-    get_temp = LangchainPrompt()
-    get_temp.get_template()
-    get_temp.LLMPromptTemplate()
-    # post = Twitter()
-    # status = post.post_tweet_message()
-    # if status:
-    #     print('Success')
-    # else:
-    #     print('Failed')
+    main()
+
 
 # PromptTemplate = "🛠️ Recently discovered [tool/resource] and it's a game-changer for [specific task]. Highly recommend it to my fellow coders!        
