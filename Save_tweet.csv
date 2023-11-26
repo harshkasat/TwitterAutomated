@@ -1,7 +1,2 @@
 Tool,ToolInfo,Tweet
-Amazon S3,Object Storage,Amazon S3 is a cloud-based object storage service used for storing data.
-GraphQL,API Query Language,GraphQL is a query language for APIs that provides a more efficient and flexible alternative to REST.
-R,Data Analysis and Statistics,"R is a powerful, open-source coding language used for statistical analysis and data visualization."
-Atom,Code Editing,"Atom is a free and open-source code editor developed by GitHub. It is a powerful tool used by developers to write, edit, and debug code. With its features and cross-platform compatibility, Atom is a popular choice for writing and managing code."
-React Native,Cross-Platform App Development,"React Native is a powerful cross-platform development framework that enables developers to create native mobile apps using JavaScript. It is highly reliable, efficient, and easy to use, making it a popular choice for app development across multiple platforms. It is also used by large companies such as Facebook, Instagram, Skype, and Walmart."
-Angular,Front-End Frameworks,"Angular is a JavaScript-based open-source front-end framework used to create rich, interactive web applications."
+
