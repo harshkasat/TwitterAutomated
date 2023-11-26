@@ -12,6 +12,12 @@ load_dotenv()
 import time
 # Temporary module 
 
+try :
+    Open_API_KEY = os.environ.get('OPENAI_API_KEY')
+except KeyError:
+    print("Open API KEY Token is not valid! ")
+
+
 class TwitterClient:
     def __init__(self, *args):
         self.consumer_key = os.environ.get('API_KEY') 
@@ -82,7 +88,7 @@ class LangchainPrompt:
         
         try:
     
-            llm = OpenAI(openai_api_key = os.environ.get('OPENAI_API_KEY'))
+            llm = OpenAI(openai_api_key = Open_API_KEY )
             tweet = llm.predict(self.get_template)
             if len(tweet) <= 280:
                 return tweet    
