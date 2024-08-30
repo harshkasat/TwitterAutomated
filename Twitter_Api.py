@@ -42,24 +42,6 @@ class TwitterClient:
             print(e)
             return False
 
-"""
-    This Bot class is optional because we can use Prompt Template to get suitable results 
-"""
-
-# class Bot(ABC):
-#     @abstractmethod
-#     def __init__(self, message) -> None:
-#         self.message = message
-
-
-# class OpenAI(Bot):    
-#     def get_message(message):
-#         response = openai.ChatCompletion.create(
-#             model = 'gpt-3.5-turbo',
-#             messages = [{"role": "user", "content": message},]
-#         )
-#         response = response['choices'][0]['message']['content']
-#         return response
 
 class Template:
     """This class represents Creation of templates"""
@@ -154,11 +136,4 @@ class SaveTweet:
             return True
         except Exception as e:
             print(e)
-
-
-
-
-
-
-
-# PromptTemplate = "🛠️ Recently discovered [tool/resource] and it's a game-changer for [specific task]. Highly recommend it to my fellow coders!        
+ 
